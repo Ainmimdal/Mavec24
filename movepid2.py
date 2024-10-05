@@ -183,42 +183,5 @@ def draw_lines(image, lines, color):
         cv2.line(image, (x1, y1), (x2, y2), color, 10)
     return image
     
-def detect_roundabout_proximity(edge_image):
-    circles = cv2.HoughCircles(edge_image, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=20, maxRadius=50)
-    if circles is not None:
-        circles = np.round(circles[0, :]).astype("int")
-        for (x, y, r) in circles:
-            if r > 40:  # Threshold for detecting proximity, adjust as needed
-                return True
-    return False
-
-def navigate_roundabout(image, edge_image, direction):
-    circles = cv2.HoughCircles(edge_image, cv2.HOUGH_GRADIENT, dp=1.2, minDist=50, param1=50, param2=30, minRadius=20, maxRadius=50)
-    if circles is not None:
-        circles = np.round(circles[0, :]).astype("int")
-        for (x, y, r) in circles:
-            cv2.circle(image, (x, y), r, (0, 255, 0), 4)
-            # Implement navigation logic for the roundabout
-            # For example: steer in the direction of the circle
-            # Detect gaps to identify exits
-            if detect_exit(edge_image, x, y, r):
-                print("Exit detected")
-                return image
-
-    return image
-
-def detect_exit(edge_image, x=None, y=None, r=None):
-    # Create a mask to check the circular region if circle coordinates are provided
-    if x is not None and y is not None and r is not None:
-        mask = np.zeros_like(edge_image)
-        cv2.circle(mask, (x, y), r, 255, thickness=-1)
-        masked_img = cv2.bitwise_and(edge_image, edge_image, mask=mask)
-
-        # Analyze the circular region for gaps
-        num_white_pixels = cv2.countNonZero(masked_img)
-        if num_white_pixels < (2 * np.pi * r) * 0.75:  # Assuming a gap if less than 75% of circumference is white
-            return True
-    return False
-
 if __name__ == "__main__":
     main()
