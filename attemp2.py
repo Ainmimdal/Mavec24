@@ -345,7 +345,6 @@ def avg_lines(image, lines):
         left_line = make_coordinates(image, left_line_avg)
     
     if right_lines:
-:
         right_line_avg = np.average(right_lines, axis=0)
         right_line = make_coordinates(image, right_line_avg)
 
