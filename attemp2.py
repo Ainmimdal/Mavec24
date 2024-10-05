@@ -157,10 +157,26 @@ class GStreamerDetectionApp(GStreamerApp):
         self.create_pipeline()
 
     def get_pipeline_string(self):
-        source_element = (
-            f"v4l2src device={self.video_source} name=src_0 ! "
-            "video/x-raw, width=640, height=480, framerate=30/1 ! "
-        )
+         if self.source_type == "rpi":
+            source_element = (
+                "libcamerasrc name=src_0 ! "
+                f"video/x-raw, format={self.network_format}, width=1536, height=864 ! "
+                + QUEUE("queue_src_scale")
+                + "videoscale ! "
+                f"video/x-raw, format={self.network_format}, width={self.network_width}, height={self.network_height}, framerate=30/1 ! "
+            )
+        elif self.source_type == "usb":
+            source_element = (
+                f"v4l2src device={self.video_source} name=src_0 ! "
+                "video/x-raw, width=640, height=480, framerate=30/1 ! "
+            )
+        else:
+            source_element = (
+                f"filesrc location=\"{self.video_source}\" name=src_0 ! "
+                + QUEUE("queue_dec264")
+                + " qtdemux ! h264parse ! avdec_h264 max-threads=2 ! "
+                " video/x-raw, format=I420 ! "
+            )
         source_element += QUEUE("queue_scale")
         source_element += "videoscale n-threads=2 ! "
         source_element += QUEUE("queue_src_convert")
